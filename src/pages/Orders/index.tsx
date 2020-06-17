@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Image } from 'react-native';
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect, useState, useMemo } from 'react'
+import { Image } from 'react-native'
 
-import api from '../../services/api';
-import formatValue from '../../utils/formatValue';
+import api from '../../services/api'
+import formatValue from '../../utils/formatValue'
+import { Food } from './types'
 
 import {
   Container,
@@ -10,46 +13,42 @@ import {
   HeaderTitle,
   FoodsContainer,
   FoodList,
-  Food,
+  FoodButton,
   FoodImageContainer,
   FoodContent,
   FoodTitle,
   FoodDescription,
   FoodPricing,
-} from './styles';
-
-interface Food {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  formattedValue: number;
-  thumbnail_url: string;
-}
+} from './styles'
 
 const Orders: React.FC = () => {
-  const [orders, setOrders] = useState<Food[]>([]);
+  const [orders, setOrders] = useState<Food[]>([])
 
   useEffect(() => {
     async function loadOrders(): Promise<void> {
-      // Load orders from API
+      const { data } = await api.get('orders')
+      const parsedData = data.map((product: { price: number }) => {
+        return {
+          ...product,
+          formattedValue: formatValue(product.price),
+        }
+      })
+      setOrders(parsedData)
     }
-
-    loadOrders();
-  }, []);
+    loadOrders()
+  }, [])
 
   return (
     <Container>
       <Header>
         <HeaderTitle>Meus pedidos</HeaderTitle>
       </Header>
-
       <FoodsContainer>
         <FoodList
           data={orders}
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => (
-            <Food key={item.id} activeOpacity={0.6}>
+            <FoodButton key={item.id} activeOpacity={0.6}>
               <FoodImageContainer>
                 <Image
                   style={{ width: 88, height: 88 }}
@@ -59,14 +58,14 @@ const Orders: React.FC = () => {
               <FoodContent>
                 <FoodTitle>{item.name}</FoodTitle>
                 <FoodDescription>{item.description}</FoodDescription>
-                <FoodPricing>{item.formattedPrice}</FoodPricing>
+                <FoodPricing>{item.formattedValue}</FoodPricing>
               </FoodContent>
-            </Food>
+            </FoodButton>
           )}
         />
       </FoodsContainer>
     </Container>
-  );
-};
+  )
+}
 
-export default Orders;
+export default Orders

@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Image, ScrollView } from 'react-native';
-
-import Icon from 'react-native-vector-icons/Feather';
-import { useNavigation } from '@react-navigation/native';
-import Logo from '../../assets/logo-header.png';
-import SearchInput from '../../components/SearchInput';
-
-import api from '../../services/api';
-import formatValue from '../../utils/formatValue';
-
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect, useState, useCallback } from 'react'
+import { Image, ScrollView } from 'react-native'
+import Icon from 'react-native-vector-icons/Feather'
+import { useNavigation } from '@react-navigation/native'
+import Logo from '../../assets/logo-header.png'
+import SearchInput from '../../components/SearchInput'
+import api from '../../services/api'
+import formatValue from '../../utils/formatValue'
+import { Category, Food } from './types'
 import {
   Container,
   Header,
@@ -20,62 +20,63 @@ import {
   CategoryItemTitle,
   FoodsContainer,
   FoodList,
-  Food,
+  FoodButton,
   FoodImageContainer,
   FoodContent,
   FoodTitle,
   FoodDescription,
   FoodPricing,
-} from './styles';
-
-interface Food {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  thumbnail_url: string;
-  formattedPrice: string;
-}
-
-interface Category {
-  id: number;
-  title: string;
-  image_url: string;
-}
+} from './styles'
 
 const Dashboard: React.FC = () => {
-  const [foods, setFoods] = useState<Food[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<
-    number | undefined
-  >();
-  const [searchValue, setSearchValue] = useState('');
+  const [foods, setFoods] = useState<Food[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
+  const [searchValue, setSearchValue] = useState('')
 
-  const navigation = useNavigation();
+  const { navigate } = useNavigation()
 
   async function handleNavigate(id: number): Promise<void> {
-    // Navigate do ProductDetails page
+    navigate('FoodDetails', { id })
   }
 
   useEffect(() => {
     async function loadFoods(): Promise<void> {
-      // Load Foods from API
+      const { data } = await api.get('foods', {
+        params: {
+          name_like: searchValue,
+          category_like: selectedCategory,
+        },
+      })
+      const parsedData = data.map((food: { price: number }) => {
+        return {
+          ...food,
+          formattedPrice: formatValue(food.price),
+        }
+      })
+      setFoods(parsedData)
     }
-
-    loadFoods();
-  }, [selectedCategory, searchValue]);
+    loadFoods()
+  }, [selectedCategory, searchValue])
 
   useEffect(() => {
     async function loadCategories(): Promise<void> {
-      // Load categories from API
+      const { data } = await api.get('categories')
+      setCategories(data)
     }
+    loadCategories()
+  }, [selectedCategory, searchValue])
 
-    loadCategories();
-  }, [selectedCategory, searchValue]);
-
-  function handleSelectCategory(id: number): void {
-    // Select / deselect category
-  }
+  const handleSelectCategory = useCallback(
+    (id: number) => {
+      if (selectedCategory !== id) {
+        setSelectedCategory(id)
+      } else {
+        setSelectedCategory(undefined)
+      }
+    },
+    [selectedCategory],
+  )
 
   return (
     <Container>
@@ -85,7 +86,8 @@ const Dashboard: React.FC = () => {
           name="log-out"
           size={24}
           color="#FFB84D"
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigate('Home')}
+          style={{ transform: [{ rotateY: '180deg' }] }}
         />
       </Header>
       <FilterContainer>
@@ -126,7 +128,7 @@ const Dashboard: React.FC = () => {
           <Title>Pratos</Title>
           <FoodList>
             {foods.map(food => (
-              <Food
+              <FoodButton
                 key={food.id}
                 onPress={() => handleNavigate(food.id)}
                 activeOpacity={0.6}
@@ -143,13 +145,13 @@ const Dashboard: React.FC = () => {
                   <FoodDescription>{food.description}</FoodDescription>
                   <FoodPricing>{food.formattedPrice}</FoodPricing>
                 </FoodContent>
-              </Food>
+              </FoodButton>
             ))}
           </FoodList>
         </FoodsContainer>
       </ScrollView>
     </Container>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

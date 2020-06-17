@@ -1,83 +1,62 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, {
   useEffect,
   useState,
   useCallback,
   useMemo,
   useLayoutEffect,
-} from 'react';
-import { Image } from 'react-native';
-
-import Icon from 'react-native-vector-icons/Feather';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import formatValue from '../../utils/formatValue';
-
-import api from '../../services/api';
-
+} from 'react'
+import { Image } from 'react-native'
+import Icon from 'react-native-vector-icons/Feather'
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import formatValue from '../../utils/formatValue'
+import api from '../../services/api'
+import { Params, Food, Extra } from './type'
 import {
   Container,
   Header,
   ScrollContainer,
   FoodsContainer,
-  Food,
+  FoodView,
   FoodImageContainer,
   FoodContent,
   FoodTitle,
   FoodDescription,
   FoodPricing,
-  AdditionalsContainer,
+  AdditionalContainer,
   Title,
   TotalContainer,
-  AdittionalItem,
-  AdittionalItemText,
-  AdittionalQuantity,
+  AdditionalItem,
+  AdditionalItemText,
+  AdditionalQuantity,
   PriceButtonContainer,
   TotalPrice,
   QuantityContainer,
   FinishOrderButton,
   ButtonText,
   IconContainer,
-} from './styles';
-
-interface Params {
-  id: number;
-}
-
-interface Extra {
-  id: number;
-  name: string;
-  value: number;
-  quantity: number;
-}
-
-interface Food {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  formattedPrice: string;
-  extras: Extra[];
-}
+} from './styles'
 
 const FoodDetails: React.FC = () => {
-  const [food, setFood] = useState({} as Food);
-  const [extras, setExtras] = useState<Extra[]>([]);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [foodQuantity, setFoodQuantity] = useState(1);
+  const [food, setFood] = useState({} as Food)
+  const [extras, setExtras] = useState<Extra[]>([])
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [foodQuantity, setFoodQuantity] = useState(1)
 
-  const navigation = useNavigation();
-  const route = useRoute();
+  const { setOptions } = useNavigation()
+  const { params } = useRoute()
 
-  const routeParams = route.params as Params;
+  const routeParams = params as Params
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
       // Load a specific food with extras based on routeParams id
     }
 
-    loadFood();
-  }, [routeParams]);
+    loadFood()
+  }, [routeParams])
 
   function handleIncrementExtra(id: number): void {
     // Increment extra quantity
@@ -97,11 +76,11 @@ const FoodDetails: React.FC = () => {
 
   const toggleFavorite = useCallback(() => {
     // Toggle if food is favorite or not
-  }, [isFavorite, food]);
+  }, [isFavorite, food])
 
   const cartTotal = useMemo(() => {
     // Calculate cartTotal
-  }, [extras, food, foodQuantity]);
+  }, [extras, food, foodQuantity])
 
   async function handleFinishOrder(): Promise<void> {
     // Finish the order and save on the API
@@ -111,11 +90,11 @@ const FoodDetails: React.FC = () => {
   const favoriteIconName = useMemo(
     () => (isFavorite ? 'favorite' : 'favorite-border'),
     [isFavorite],
-  );
+  )
 
   useLayoutEffect(() => {
     // Add the favorite icon on the right of the header bar
-    navigation.setOptions({
+    setOptions({
       headerRight: () => (
         <MaterialIcon
           name={favoriteIconName}
@@ -124,16 +103,15 @@ const FoodDetails: React.FC = () => {
           onPress={() => toggleFavorite()}
         />
       ),
-    });
-  }, [navigation, favoriteIconName, toggleFavorite]);
+    })
+  }, [setOptions, favoriteIconName, toggleFavorite])
 
   return (
     <Container>
       <Header />
-
       <ScrollContainer>
         <FoodsContainer>
-          <Food>
+          <FoodView>
             <FoodImageContainer>
               <Image
                 style={{ width: 327, height: 183 }}
@@ -147,14 +125,14 @@ const FoodDetails: React.FC = () => {
               <FoodDescription>{food.description}</FoodDescription>
               <FoodPricing>{food.formattedPrice}</FoodPricing>
             </FoodContent>
-          </Food>
+          </FoodView>
         </FoodsContainer>
-        <AdditionalsContainer>
+        <AdditionalContainer>
           <Title>Adicionais</Title>
           {extras.map(extra => (
-            <AdittionalItem key={extra.id}>
-              <AdittionalItemText>{extra.name}</AdittionalItemText>
-              <AdittionalQuantity>
+            <AdditionalItem key={extra.id}>
+              <AdditionalItemText>{extra.name}</AdditionalItemText>
+              <AdditionalQuantity>
                 <Icon
                   size={15}
                   color="#6C6C80"
@@ -162,9 +140,9 @@ const FoodDetails: React.FC = () => {
                   onPress={() => handleDecrementExtra(extra.id)}
                   testID={`decrement-extra-${extra.id}`}
                 />
-                <AdittionalItemText testID={`extra-quantity-${extra.id}`}>
+                <AdditionalItemText testID={`extra-quantity-${extra.id}`}>
                   {extra.quantity}
-                </AdittionalItemText>
+                </AdditionalItemText>
                 <Icon
                   size={15}
                   color="#6C6C80"
@@ -172,14 +150,14 @@ const FoodDetails: React.FC = () => {
                   onPress={() => handleIncrementExtra(extra.id)}
                   testID={`increment-extra-${extra.id}`}
                 />
-              </AdittionalQuantity>
-            </AdittionalItem>
+              </AdditionalQuantity>
+            </AdditionalItem>
           ))}
-        </AdditionalsContainer>
+        </AdditionalContainer>
         <TotalContainer>
           <Title>Total do pedido</Title>
           <PriceButtonContainer>
-            <TotalPrice testID="cart-total">{cartTotal}</TotalPrice>
+            <TotalPrice testID="cart-total">cartTotal</TotalPrice>
             <QuantityContainer>
               <Icon
                 size={15}
@@ -188,9 +166,9 @@ const FoodDetails: React.FC = () => {
                 onPress={handleDecrementFood}
                 testID="decrement-food"
               />
-              <AdittionalItemText testID="food-quantity">
+              <AdditionalItemText testID="food-quantity">
                 {foodQuantity}
-              </AdittionalItemText>
+              </AdditionalItemText>
               <Icon
                 size={15}
                 color="#6C6C80"
@@ -200,7 +178,6 @@ const FoodDetails: React.FC = () => {
               />
             </QuantityContainer>
           </PriceButtonContainer>
-
           <FinishOrderButton onPress={() => handleFinishOrder()}>
             <ButtonText>Confirmar pedido</ButtonText>
             <IconContainer>
@@ -210,7 +187,7 @@ const FoodDetails: React.FC = () => {
         </TotalContainer>
       </ScrollContainer>
     </Container>
-  );
-};
+  )
+}
 
-export default FoodDetails;
+export default FoodDetails

@@ -1,22 +1,22 @@
-import React from 'react';
+import React from 'react'
 
 jest.mock(
   'react-native/Libraries/Components/Touchable/TouchableOpacity.js',
   () => {
-    const {TouchableHighlight} = require('react-native'); // eslint-disable-line
+    const { TouchableHighlight } = require('react-native') // eslint-disable-line
 
-    const MockTouchable = (props) => {
-      return <TouchableHighlight {...props} />;
-    };
+    const MockTouchable = props => {
+      return <TouchableHighlight {...props} />
+    }
 
-    MockTouchable.displayName = 'TouchableOpacity';
+    MockTouchable.displayName = 'TouchableOpacity'
 
-    return MockTouchable;
+    return MockTouchable
   },
-);
+)
 
 jest.mock('react-native-gesture-handler', () => {
-  const View = require('react-native/Libraries/Components/View/View');
+  const View = require('react-native/Libraries/Components/View/View')
 
   return {
     Swipeable: View,
@@ -47,5 +47,5 @@ jest.mock('react-native-gesture-handler', () => {
     FlatList: View,
     gestureHandlerRootHOC: jest.fn(),
     Directions: {},
-  };
-});
+  }
+})
