@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState, useCallback } from 'react'
 import { Image, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Feather'

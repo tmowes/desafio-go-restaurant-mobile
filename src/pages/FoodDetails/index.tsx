@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, {
@@ -53,8 +54,10 @@ const FoodDetails: React.FC = () => {
   useEffect(() => {
     async function loadFood(): Promise<void> {
       // Load a specific food with extras based on routeParams id
+      const { data } = await api.get(`foods/${routeParams.id}`)
+      setFood(data)
+      setExtras(data.extras)
     }
-
     loadFood()
   }, [routeParams])
 
@@ -75,11 +78,21 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(() => {
+    setIsFavorite(state => !state)
     // Toggle if food is favorite or not
   }, [isFavorite, food])
 
   const cartTotal = useMemo(() => {
     // Calculate cartTotal
+    const totalOrder = food.price
+    // filtrar extras pela quantity >= 1 antes de fazer reduce
+    const extrasTotal = extras.reduce((acc, extra) => {
+      const subtotal = extra.quantity * extra.value
+      return acc + subtotal
+    }, 0)
+    console.log(extrasTotal)
+    const total = extrasTotal * foodQuantity * food.price
+    return formatValue(totalOrder)
   }, [extras, food, foodQuantity])
 
   async function handleFinishOrder(): Promise<void> {
@@ -157,7 +170,7 @@ const FoodDetails: React.FC = () => {
         <TotalContainer>
           <Title>Total do pedido</Title>
           <PriceButtonContainer>
-            <TotalPrice testID="cart-total">cartTotal</TotalPrice>
+            <TotalPrice testID="cart-total">{cartTotal}</TotalPrice>
             <QuantityContainer>
               <Icon
                 size={15}
