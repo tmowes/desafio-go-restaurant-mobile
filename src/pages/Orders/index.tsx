@@ -39,21 +39,7 @@ const Orders: React.FC = () => {
     }
     loadOrders()
   }, [])
-
-  // useEffect(() => {
-  //   async function loadOrders(): Promise<void> {
-  //     const { data } = await api.get<Product[]>('/orders')
-  //     setOrders(
-  //       data.map(product => {
-  //         return {
-  //           ...product,
-  //           formattedValue: formatValue(product.price),
-  //         }
-  //       }),
-  //     )
-  //   }
-  //   loadOrders()
-  // }, [isFocused])
+  // }, [isFocused]) // dependencies to update screen after first render
 
   const handleDeleteOrder = useCallback(
     async (order_id: number) => {
