@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Image } from 'react-native'
 
+import { useRoute } from '@react-navigation/native'
 import api from '../../services/api'
 import formatValue from '../../utils/formatValue'
-import { Food } from './types'
+import { Food, Product } from './types'
 
 import {
   Container,
@@ -19,13 +20,24 @@ import {
   FoodPricing,
 } from './styles'
 
+interface Params {
+  id: number
+}
+
 const Orders: React.FC = () => {
+  const { params } = useRoute()
+  const routeParams = params as Params
+  const [loadingState, setLoadingState] = useState(true)
   const [orders, setOrders] = useState<Food[]>([])
 
   useEffect(() => {
+    setLoadingState(true)
+  }, [])
+
+  useEffect(() => {
     async function loadOrders(): Promise<void> {
-      const { data } = await api.get('orders')
-      const parsedData = data.map((product: { price: number }) => {
+      const { data } = await api.get<Product[]>('/orders')
+      const parsedData = data.map(product => {
         return {
           ...product,
           formattedValue: formatValue(product.price),
@@ -33,7 +45,15 @@ const Orders: React.FC = () => {
       })
       setOrders(parsedData)
     }
-    loadOrders()
+    if (loadingState) {
+      loadOrders()
+      setLoadingState(false)
+    }
+  }, [loadingState, orders])
+
+  const handleDeleteOrder = useCallback(async (order_id: number) => {
+    await api.delete(`orders/${order_id}`)
+    setLoadingState(true)
   }, [])
 
   return (
@@ -46,7 +66,11 @@ const Orders: React.FC = () => {
           data={orders}
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => (
-            <FoodButton key={item.id} activeOpacity={0.6}>
+            <FoodButton
+              key={item.id}
+              activeOpacity={0.6}
+              onLongPress={() => handleDeleteOrder(item.id)}
+            >
               <FoodImageContainer>
                 <Image
                   style={{ width: 88, height: 88 }}

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Image } from 'react-native'
-
 import api from '../../services/api'
 import formatValue from '../../utils/formatValue'
-
+import { Food } from './types'
 import {
   Container,
   Header,
@@ -18,22 +17,13 @@ import {
   FoodPricing,
 } from './styles'
 
-interface Food {
-  id: number
-  name: string
-  description: string
-  price: number
-  thumbnail_url: string
-  formattedPrice: string
-}
-
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<Food[]>([])
 
   useEffect(() => {
     async function loadFavorites(): Promise<void> {
-      const { data } = await api.get('favorites')
-      const parsedData = data.map((food: { price: number }) => {
+      const { data } = await api.get<Food[]>('/favorites')
+      const parsedData = data.map(food => {
         return {
           ...food,
           formattedPrice: formatValue(food.price),

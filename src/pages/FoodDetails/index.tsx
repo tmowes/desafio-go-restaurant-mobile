@@ -46,15 +46,14 @@ const FoodDetails: React.FC = () => {
   const [isFavorite, setIsFavorite] = useState(false)
   const [foodQuantity, setFoodQuantity] = useState(1)
 
-  const { setOptions } = useNavigation()
+  const { navigate, setOptions, reset } = useNavigation()
   const { params } = useRoute()
 
   const routeParams = params as Params
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
-      // Load a specific food with extras based on routeParams id
-      const { data } = await api.get(`foods/${routeParams.id}`)
+      const { data } = await api.get<Food>(`/foods/${routeParams.id}`)
       setFood({ ...data, formattedPrice: formatValue(data.price) })
       setExtras(
         data.extras.map((extra: Omit<Extra, 'quantity'>) => ({
@@ -62,28 +61,35 @@ const FoodDetails: React.FC = () => {
           quantity: 0,
         })),
       )
+      // try {
+      //   await api.get(`/favorites/${routeParams.id}`)
+      //   setIsFavorite(true)
+      // } catch (error) {
+      //   setIsFavorite(false)
+      // }
     }
     loadFood()
   }, [routeParams])
 
   function handleIncrementExtra(id: number): void {
-    // Increment extra quantity
     setExtras(
-      extras.map(extra =>
-        extra.id === id ? { ...extra, quantity: extra.quantity + 1 } : extra,
-      ),
+      extras.map(extra => {
+        if (extra.id === id) {
+          return { ...extra, quantity: extra.quantity + 1 }
+        }
+        return extra
+      }),
     )
   }
 
   function handleDecrementExtra(id: number): void {
-    // Decrement extra quantity
-    const findExtra = extras.find(extra => extra.id === id)
-    if (!findExtra) return
-    if (findExtra.quantity === 0) return
     setExtras(
-      extras.map(extra =>
-        extra.id === id ? { ...extra, quantity: extra.quantity - 1 } : extra,
-      ),
+      extras.map(extra => {
+        if (extra.id === id && extra.quantity > 0) {
+          return { ...extra, quantity: extra.quantity - 1 }
+        }
+        return extra
+      }),
     )
   }
 
@@ -98,25 +104,34 @@ const FoodDetails: React.FC = () => {
 
   const toggleFavorite = useCallback(async () => {
     if (isFavorite) {
-      await api.delete(`favorites/${food.id}`)
+      await api.delete(`/favorites/${food.id}`)
+      setIsFavorite(false)
     } else {
-      await api.post('favorites', food)
+      delete food.id
+      delete food.extras
+      delete food.formattedPrice
+      await api.post('/favorites', food)
     }
     setIsFavorite(!isFavorite)
   }, [isFavorite, food])
 
   const cartTotal = useMemo(() => {
-    const extraTotal = extras.reduce((acc, extra) => {
-      const subtotal = extra.quantity * extra.value
-      return acc + subtotal
-    }, 0)
-    const uniqueFood = extraTotal + food.price
-    const totalOrder = uniqueFood * foodQuantity
-    return formatValue(totalOrder)
+    return formatValue(
+      food.price * foodQuantity +
+        extras.reduce((acc, extra) => acc + extra.quantity * extra.value, 0),
+    )
   }, [extras, food, foodQuantity])
 
   async function handleFinishOrder(): Promise<void> {
-    await api.post('orders')
+    const newOrder = {
+      product_id: food.id,
+      ...food,
+      extras,
+    }
+    delete newOrder.id
+    delete newOrder.formattedPrice
+    await api.post('/orders', newOrder)
+    navigate('MainBottom', { screen: 'Orders' })
     // Finish the order and save on the API
   }
 
