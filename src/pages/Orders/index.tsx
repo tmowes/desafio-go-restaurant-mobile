@@ -1,11 +1,12 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState, useCallback } from 'react'
 import { Image } from 'react-native'
 
-import { useRoute } from '@react-navigation/native'
+import { useRoute, useIsFocused } from '@react-navigation/native'
 import api from '../../services/api'
 import formatValue from '../../utils/formatValue'
 import { Food, Product } from './types'
-
 import {
   Container,
   Header,
@@ -20,41 +21,47 @@ import {
   FoodPricing,
 } from './styles'
 
-interface Params {
-  id: number
-}
-
 const Orders: React.FC = () => {
-  const { params } = useRoute()
-  const routeParams = params as Params
-  const [loadingState, setLoadingState] = useState(true)
+  // const isFocused = useIsFocused()
   const [orders, setOrders] = useState<Food[]>([])
-
-  useEffect(() => {
-    setLoadingState(true)
-  }, [])
 
   useEffect(() => {
     async function loadOrders(): Promise<void> {
       const { data } = await api.get<Product[]>('/orders')
-      const parsedData = data.map(product => {
-        return {
-          ...product,
-          formattedValue: formatValue(product.price),
-        }
-      })
-      setOrders(parsedData)
+      setOrders(
+        data.map(product => {
+          return {
+            ...product,
+            formattedValue: formatValue(product.price),
+          }
+        }),
+      )
     }
-    if (loadingState) {
-      loadOrders()
-      setLoadingState(false)
-    }
-  }, [loadingState, orders])
-
-  const handleDeleteOrder = useCallback(async (order_id: number) => {
-    await api.delete(`orders/${order_id}`)
-    setLoadingState(true)
+    loadOrders()
   }, [])
+
+  // useEffect(() => {
+  //   async function loadOrders(): Promise<void> {
+  //     const { data } = await api.get<Product[]>('/orders')
+  //     setOrders(
+  //       data.map(product => {
+  //         return {
+  //           ...product,
+  //           formattedValue: formatValue(product.price),
+  //         }
+  //       }),
+  //     )
+  //   }
+  //   loadOrders()
+  // }, [isFocused])
+
+  const handleDeleteOrder = useCallback(
+    async (order_id: number) => {
+      await api.delete(`orders/${order_id}`)
+      setOrders(orders.filter(order => order.id !== order_id))
+    },
+    [orders],
+  )
 
   return (
     <Container>
@@ -64,23 +71,23 @@ const Orders: React.FC = () => {
       <FoodsContainer>
         <FoodList
           data={orders}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => (
+          keyExtractor={order => String(order.id)}
+          renderItem={({ item: order }) => (
             <FoodButton
-              key={item.id}
+              key={order.id}
               activeOpacity={0.6}
-              onLongPress={() => handleDeleteOrder(item.id)}
+              onLongPress={() => handleDeleteOrder(order.id)}
             >
               <FoodImageContainer>
                 <Image
                   style={{ width: 88, height: 88 }}
-                  source={{ uri: item.thumbnail_url }}
+                  source={{ uri: order.thumbnail_url }}
                 />
               </FoodImageContainer>
               <FoodContent>
-                <FoodTitle>{item.name}</FoodTitle>
-                <FoodDescription>{item.description}</FoodDescription>
-                <FoodPricing>{item.formattedValue}</FoodPricing>
+                <FoodTitle>{order.name}</FoodTitle>
+                <FoodDescription>{order.description}</FoodDescription>
+                <FoodPricing>{order.formattedValue}</FoodPricing>
               </FoodContent>
             </FoodButton>
           )}

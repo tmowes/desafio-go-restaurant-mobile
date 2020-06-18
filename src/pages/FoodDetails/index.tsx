@@ -46,7 +46,7 @@ const FoodDetails: React.FC = () => {
   const [isFavorite, setIsFavorite] = useState(false)
   const [foodQuantity, setFoodQuantity] = useState(1)
 
-  const { navigate, setOptions, reset } = useNavigation()
+  const { navigate, setOptions } = useNavigation()
   const { params } = useRoute()
 
   const routeParams = params as Params
@@ -61,12 +61,6 @@ const FoodDetails: React.FC = () => {
           quantity: 0,
         })),
       )
-      // try {
-      //   await api.get(`/favorites/${routeParams.id}`)
-      //   setIsFavorite(true)
-      // } catch (error) {
-      //   setIsFavorite(false)
-      // }
     }
     loadFood()
   }, [routeParams])
