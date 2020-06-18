@@ -61,6 +61,12 @@ const FoodDetails: React.FC = () => {
           quantity: 0,
         })),
       )
+      try {
+        await api.get(`/favorites/${routeParams.id}`)
+        setIsFavorite(true)
+      } catch (error) {
+        setIsFavorite(false)
+      }
     }
     loadFood()
   }, [routeParams])
@@ -140,7 +146,7 @@ const FoodDetails: React.FC = () => {
       headerRight: () => (
         <MaterialIcon
           name={favoriteIconName}
-          size={24}
+          size={28}
           color="#FFB84D"
           onPress={() => toggleFavorite()}
         />

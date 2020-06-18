@@ -46,13 +46,14 @@ const Dashboard: React.FC = () => {
           category_like: selectedCategory,
         },
       })
-      const parsedData = data.map(food => {
-        return {
-          ...food,
-          formattedPrice: formatValue(food.price),
-        }
-      })
-      setFoods(parsedData)
+      setFoods(
+        data.map(food => {
+          return {
+            ...food,
+            formattedPrice: formatValue(food.price),
+          }
+        }),
+      )
     }
     loadFoods()
   }, [selectedCategory, searchValue])
